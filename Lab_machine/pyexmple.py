@@ -1,55 +1,43 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Definir el rango de t
-t = np.linspace(0.5, 3.0, 30)
+# Definir la función f(x)
+def f(x):
+    return np.sin(x) + np.sin((10/3) * x)
 
-# Definir las funciones
-f_t = np.log(t**2)       # Función logarítmica
-g_t = np.exp(-t) / t     # Función exponencial
-suma_t = f_t + g_t       # Suma de funciones
-compuesta_t = np.log(g_t**2)  # Función compuesta
+# Definir el rango de x
+x_values = np.linspace(2.7, 7.5, 500)
+y_values = f(x_values)
 
-# Crear la figura y los subplots
-fig, axs = plt.subplots(2, 2, figsize=(10, 8))
+# Condiciones iniciales dadas
+initial_conditions = [3.0, 3.1, 3.2, 3.3]
 
-# Gráfico 1: Logarítmica
-axs[0, 0].plot(t, f_t, label=r'$f(t) = \ln(t^2)$', color='b')
-axs[0, 0].set_title("Logarítmica")
-axs[0, 0].set_xlabel("Tiempo (s)")
-axs[0, 0].set_ylabel("Distancia (m)")
-axs[0, 0].legend()
-axs[0, 0].grid()
+# Calcular los valores de x[k] con una regla arbitraria (por ejemplo, sucesión de puntos espaciados)
+x_k_values = {}
+for x0 in initial_conditions:
+    x_k_values[x0] = [x0]
+    for _ in range(20):  # Generar 20 valores
+        x_k_values[x0].append(x_k_values[x0][-1] + 0.2)  # Paso arbitrario
 
-# Gráfico 2: Exponencial
-axs[0, 1].plot(t, g_t, label=r'$g(t) = \frac{e^{-t}}{t}$', color='g')
-axs[0, 1].set_title("Exponencial")
-axs[0, 1].set_xlabel("Tiempo (s)")
-axs[0, 1].set_ylabel("Distancia (m)")
-axs[0, 1].legend()
-axs[0, 1].grid()
+# Graficar la función
+plt.figure(figsize=(10, 6))
+plt.plot(x_values, y_values, label="f(x) = sin(x) + sin(10x/3)", color="black")
 
-# Gráfico 3: Suma
-axs[1, 0].plot(t, suma_t, label=r'$f(t) + g(t)$', color='r')
-axs[1, 0].set_title("Suma")
-axs[1, 0].set_xlabel("Tiempo (s)")
-axs[1, 0].set_ylabel("Distancia (m)")
-axs[1, 0].legend()
-axs[1, 0].grid()
+# Colores para cada condición inicial
+colors = ['red', 'blue', 'green', 'purple']
 
-# Gráfico 4: Compuesta
-axs[1, 1].plot(t, compuesta_t, label=r'$f(g(t))$', color='m')
-axs[1, 1].set_title("Compuesta")
-axs[1, 1].set_xlabel("Tiempo (s)")
-axs[1, 1].set_ylabel("Distancia (m)")
-axs[1, 1].legend()
-axs[1, 1].grid()
+# Graficar los puntos generados con cada condición inicial
+for i, x0 in enumerate(initial_conditions):
+    x_k = np.array(x_k_values[x0])
+    y_k = f(x_k)
+    plt.scatter(x_k, y_k, color=colors[i], label=f"x[0] = {x0}")
 
-# Título general de la figura
-fig.suptitle("Gráficas de Funciones Matemáticas", fontsize=14)
-
-# Ajustar los subplots para mejor presentación
-plt.tight_layout(rect=[0, 0, 1, 0.96])
+# Configurar la gráfica
+plt.xlabel("x")
+plt.ylabel("f(x)")
+plt.title("Gráfica de f(x) y puntos generados con diferentes condiciones iniciales")
+plt.legend()
+plt.grid(True)
 
 # Mostrar la gráfica
 plt.show()
