@@ -1,43 +1,78 @@
 import numpy as np
-import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 
-# Definir la función f(x)
-def f(x):
-    return np.sin(x) + np.sin((10/3) * x)
+# 1) Función objetivo: NEGATIVA de lo que deseamos maximizar
+def funcion_objetivo(X):
+    x_R, x_C, x_P, x_A = X
+    return -(40*x_R + 250*x_C + 30*x_P + 5*x_A)  
+    # Al minimizar esto, equivalemos a maximizar la utilidad original.
 
-# Definir el rango de x
-x_values = np.linspace(2.7, 7.5, 500)
-y_values = f(x_values)
+# 2) Definir funciones de restricción => deben retornar un valor >= 0
 
-# Condiciones iniciales dadas
-initial_conditions = [3.0, 3.1, 3.2, 3.3]
+# 7x_R + 10x_C + 2x_P +  x_A <= 325  =>  325 - (... ) >= 0
+def c1(X):
+    x_R, x_C, x_P, x_A = X
+    return 325 - (7*x_R + 10*x_C + 2*x_P + x_A)
 
-# Calcular los valores de x[k] con una regla arbitraria (por ejemplo, sucesión de puntos espaciados)
-x_k_values = {}
-for x0 in initial_conditions:
-    x_k_values[x0] = [x0]
-    for _ in range(20):  # Generar 20 valores
-        x_k_values[x0].append(x_k_values[x0][-1] + 0.2)  # Paso arbitrario
+#  x_R + 2.5x_C + 0.5x_P <= 55      =>  55 - (... ) >= 0
+def c2(X):
+    x_R, x_C, x_P, x_A = X
+    return 55 - (x_R + 2.5*x_C + 0.5*x_P)
 
-# Graficar la función
-plt.figure(figsize=(10, 6))
-plt.plot(x_values, y_values, label="f(x) = sin(x) + sin(10x/3)", color="black")
+# 5x_R + 7x_C + 2x_P + 7x_A <= 420  =>  420 - (... ) >= 0
+def c3(X):
+    x_R, x_C, x_P, x_A = X
+    return 420 - (5*x_R + 7*x_C + 2*x_P + 7*x_A)
 
-# Colores para cada condición inicial
-colors = ['red', 'blue', 'green', 'purple']
+# 50x_R + 88x_C + 27x_P + 50x_A <= 3800 => 3800 - (... ) >= 0
+def c4(X):
+    x_R, x_C, x_P, x_A = X
+    return 3800 - (50*x_R + 88*x_C + 27*x_P + 50*x_A)
 
-# Graficar los puntos generados con cada condición inicial
-for i, x0 in enumerate(initial_conditions):
-    x_k = np.array(x_k_values[x0])
-    y_k = f(x_k)
-    plt.scatter(x_k, y_k, color=colors[i], label=f"x[0] = {x0}")
+# Mínimos de variables:
+# x_R >= 15 => x_R - 15 >= 0
+def c5(X):
+    x_R, x_C, x_P, x_A = X
+    return x_R - 15
 
-# Configurar la gráfica
-plt.xlabel("x")
-plt.ylabel("f(x)")
-plt.title("Gráfica de f(x) y puntos generados con diferentes condiciones iniciales")
-plt.legend()
-plt.grid(True)
+# x_C >= 10 => x_C - 10 >= 0
+def c6(X):
+    x_R, x_C, x_P, x_A = X
+    return x_C - 10
 
-# Mostrar la gráfica
-plt.show()
+# x_P >= 20 => x_P - 20 >= 0
+def c7(X):
+    x_R, x_C, x_P, x_A = X
+    return x_P - 20
+
+# x_A >= 0  => x_A - 0 >= 0
+def c8(X):
+    x_R, x_C, x_P, x_A = X
+    return x_A - 0
+
+# 3) Construir la lista total de restricciones
+constraints = [
+    {"type": "ineq", "fun": c1},
+    {"type": "ineq", "fun": c2},
+    {"type": "ineq", "fun": c3},
+    {"type": "ineq", "fun": c4},
+    {"type": "ineq", "fun": c5},
+    {"type": "ineq", "fun": c6},
+    {"type": "ineq", "fun": c7},
+    {"type": "ineq", "fun": c8}
+]
+
+# 4) Punto inicial factible (minimos)
+x0 = np.array([15, 10, 20, 0])
+
+# 5) Llamamos a minimize()
+resultado = minimize(funcion_objetivo,
+                     x0,
+                     method='SLSQP',
+                     constraints=constraints)
+
+# 6) Mostrar el resultado
+print("Éxito:", resultado.success)
+print("Mensaje:", resultado.message)
+print("Valor máximo de la función objetivo:", -resultado.fun)  # Con signo menos
+print("Variables óptimas [x_R, x_C, x_P, x_A]:", resultado.x)
